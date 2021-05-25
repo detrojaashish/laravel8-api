@@ -62,7 +62,12 @@ public function generateSlot($event,$bookingDate){
             unset($allSlots[$key]);
         }
     }
-    return $allSlots;
+    $finalSlots = [];
+    foreach ($allSlots as $value) {
+        array_push($finalSlots,$value);
+     } 
+    return $finalSlots;
+ 
 }
 public function index(Request $request,$eventId=null)
 {
