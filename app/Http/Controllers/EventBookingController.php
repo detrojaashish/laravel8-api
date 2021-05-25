@@ -29,6 +29,9 @@ public function generateSlot($event,$bookingDate){
     if($event->participation_limitations>0 && count($allSlotBooked)>=$event->participation_limitations){
         return [];
     }
+
+    $todayDate = Carbon::now()->format('Y-m-d');
+    $currentTime = Carbon::now()->format('H:i');
     $allSlots = [];
     for($i=$availableFrom;$i<=$availableTo;){
         $startTime = Carbon::parse($i);
@@ -36,7 +39,19 @@ public function generateSlot($event,$bookingDate){
             $startTime->addMinutes($preprationTime);
         }     
         $newSlot = $startTime; 
-        array_push($allSlots, $newSlot->format('H:i'));  
+        $newSlot = $newSlot->format('H:i');
+        if($bookingDate==Carbon::now()->format('Y-m-d')){
+            if($currentTime>=$newSlot){
+                $endTime = $startTime->addMinutes($durations);
+                $i = $endTime->format('H:i');
+                continue;
+            }else{
+                array_push($allSlots, $newSlot);    
+            }
+        }else{
+            array_push($allSlots, $newSlot);    
+        }
+          
         if(end($allSlots)>=$notAvailableFrom && end($allSlots)<$notAvailableTo ){
             array_pop($allSlots);
             $startTime = Carbon::parse($notAvailableTo);
@@ -49,19 +64,21 @@ public function generateSlot($event,$bookingDate){
             $i = $endTime->format('H:i');
         }
     }
-    if(end($allSlots) >=$availableTo){
-        array_pop($allSlots);
-    } 
-    $lastSlot = Carbon::parse(end($allSlots))->addMinutes($durations);
-    if($lastSlot->format('H:i') > $availableTo){
-        array_pop($allSlots);
-    }
-    $slotBookedCount = array_count_values( $slotBooked );
-    foreach ($allSlots as $key => $value) {
-        if($event->max_no_participation_per_book>0 && isset($slotBookedCount[$value]) && $slotBookedCount[$value]>=$event->max_no_participation_per_book ){
-            unset($allSlots[$key]);
+    if(count($allSlots)){
+        if(end($allSlots) >=$availableTo){
+            array_pop($allSlots);
+        } 
+        $lastSlot = Carbon::parse(end($allSlots))->addMinutes($durations);
+        if($lastSlot->format('H:i') > $availableTo){
+            array_pop($allSlots);
         }
-    }
+        $slotBookedCount = array_count_values( $slotBooked );
+        foreach ($allSlots as $key => $value) {
+            if($event->max_no_participation_per_book>0 && isset($slotBookedCount[$value]) && $slotBookedCount[$value]>=$event->max_no_participation_per_book ){
+                unset($allSlots[$key]);
+            }
+        }
+    }    
     $finalSlots = [];
     foreach ($allSlots as $value) {
         array_push($finalSlots,$value);
