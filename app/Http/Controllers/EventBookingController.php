@@ -121,9 +121,9 @@ public function schedule(Request $request)
     $time = Carbon::now()->format('H:i');
     $validator = Validator::make($request->all(), [
         'event_id' => 'required',
-        'email' => 'required|email',
-        'first_name' => 'required',
-        'last_name' => 'required',
+        'email' => 'required|email|max:255',
+        'first_name' => 'required|max:50',
+        'last_name' => 'required|max:50',
         'booking_date' => 'required|date_format:Y-m-d|after_or_equal:'.$todayDate,
         'booking_time' => 'required|date_format:H:i',       
     ]);
